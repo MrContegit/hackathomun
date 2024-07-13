@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Dashboard</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <script src="/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #003366, #5bc0be, #cc0000);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            margin-top: 70px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .event-details {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .event-details .card-header {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-bottom: none;
+            text-align: center;
+        }
+
+        .event-details .card-body {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .event-details h2 {
+            color: #5bc0be;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .event-details p {
+            color: #ffffff;
+        }
+
+        .event-details img {
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .event-details .col-md-7 p {
+            margin-bottom: 0.5rem;
+        }
+
+        .event-details textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .event-details .complete, .event-details .event-links a {
+            color: #5bc0be;
+            font-weight: bold;
+            text-decoration: none;
+            margin-left: 10px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .event-details .event-links a:hover {
+            transform: scale(1.1);
+            color: #5bc0be;
+        }
+
+        .event-details .event-links {
+            display: flex;
+            align-items: center;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-pills .nav-link {
+            color: white;
+            background-color: #007bff;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #ff0000;
+        }
+
+        .navbar {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 20px;
+            transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+            color: #cccccc;
+        }
+
+        .navbar .navbar-brand {
+            margin-right: auto;
+        }
+
+        .navbar .nav-item {
+            margin-right: 20px;
+        }
+
+        .navbar .nav-item:last-child {
+            margin-right: 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container .form-control,
+            .search-container .form-select,
+            .search-container .btn {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a href="#" class="navbar-brand">Home</a>
+    <div class="d-flex">
+        <a th:href="@{/index}">Events</a>
+        <a th:href="@{/formEvents}">Create Event</a>
+        <a href="/logout" class="ms-4" th:if="${#authentication.name != 'anonymousUser'}">
+            <i class="bi bi-person-circle"></i> <span th:text="${#authentication.name}">Nom de l'utilisateur</span>
+        </a>
+        <a href="/login" class="ms-4" th:if="${#authentication.name == 'anonymousUser'}">
+            <i class="bi bi-person-circle"></i> Connexion
+        </a>
+    </div>
+</nav>
+<div class="container">
+    <h1>Event Dashboard</h1>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="col" th:each="event : ${createdEvents}">
+            <div class="card event-details">
+                <div class="card-header">
+                    <h2 th:text="${event.title}">Event Title</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <ul>
+                                <li th:each="file : ${event.filePathList}" th:if="${event.filePathList.indexOf(file) == 0}">
+                                    <img class="img-fluid" th:src="@{/uploads/{filename}(filename=${event.filePathList[0].fileName})}" alt="Event Image" th:alt="${event.filePathList[0].fileName}"/>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-7">
+                            <p><strong>Description: </strong><span th:text="${event.description}">Event Description</span></p>
+                            <p><strong>Date de début:</strong> <span th:text="${event.datedeb}">Event Date</span></p>
+                            <p><strong>Date de fin:</strong> <span th:text="${event.datefin}">Event Date</span></p>
+                            <p><strong>Lieu:</strong> <span th:text="${event.location}">Event Location</span></p>
+                            <p><strong>Prix:</strong> <span th:text="${event.billetList[0].prix}">Event Price</span></p>
+                            <p><strong>Statut:</strong> <span th:text="${event.privated ? 'Privé' : 'Public'}">Event Status</span></p>
+                            <p><strong>Catégorie:</strong> <span th:text="${event.category}">Event Category</span></p>
+                            <div class="event-links">
+                                <span style="color: red" class="complete">Complété</span>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#editEventModal" th:data-id="${event.id}">Modifier</a>
+                                <a th:href="@{/deleteEvent/{id}(id=${event.id})}">Supprimer</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Event Modal -->
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEventModalLabel">Modifier l'événement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/editEvent}" method="post">
+                    <input type="hidden" name="id" th:value="${event.id}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Titre de l'événement</label>
+                        <input type="text" class="form-control" id="title" name="title" th:value="${event.title}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" th:text="${event.description}" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="datedeb" class="form-label">Date de début</label>
+                        <input type="datetime-local" class="form-control" id="datedeb" name="datedeb" th:value="${#dates.format(event.datedeb, 'yyyy-MM-dd\'T\'HH:mm')}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="datefin" class="form-label">Date de fin</label>
+                        <input type="datetime-local" class="form-control" id="datefin" name="datefin" th:value="${#dates.format(event.datefin, 'yyyy-MM-dd\'T\'HH:mm')}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Lieu</label>
+                        <input type="text" class="form-control" id="location" name="location" th:value="${event.location}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="prix" class="form-label">Prix</label>
+                        <input type="number" class="form-control" id="prix" name="prix" th:value="${event.billetList[0].prix}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Catégorie</label>
+                        <input type="text" class="form-control" id="category" name="category" th:value="${event.category}" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="privated" name="privated" th:checked="${event.privated}">
+                            <label class="form-check-label" for="privated">Privé</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('a[data-bs-toggle="modal"]').forEach(function (element) {
+        element.addEventListener('click', function (event) {
+            var id = this.getAttribute('data-id');
+            var modal = document.querySelector('#editEventModal');
+            modal.querySelector('input[name="id"]').value = id;
+        });
+    });
+</script>
+</body>
+</html>

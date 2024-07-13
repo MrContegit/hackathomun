@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Event List</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <script src="/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #003366, #5bc0be, #cc0000);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            margin-top: 70px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .event-details {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .event-details .card-header {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-bottom: none;
+            text-align: center;
+        }
+
+        .event-details .card-body {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .event-details h2 {
+            color: #5bc0be;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .event-details p {
+            color: #ffffff;
+        }
+
+        .event-details img {
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .event-details .col-md-7 p {
+            margin-bottom: 0.5rem;
+        }
+
+        .event-details textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .event-details .complete, .event-details .event-links a {
+            color: #5bc0be; /* Utiliser la même couleur que le titre de l'événement */
+            font-weight: bold;
+            text-decoration: none;
+            margin-left: 10px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .event-details .event-links a:hover {
+            transform: scale(1.1); /* Animation de zoom */
+            color: #5bc0be; /* Utiliser la même couleur que le titre de l'événement */
+        }
+
+        .event-details .event-links {
+            display: flex;
+            align-items: center;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-pills .nav-link {
+            color: white;
+            background-color: #007bff;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #ff0000;
+        }
+
+        .navbar {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 20px;
+            transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+            color: #cccccc;
+        }
+
+        .navbar .navbar-brand {
+            margin-right: auto;
+        }
+
+        .navbar .nav-item {
+            margin-right: 20px;
+        }
+
+        .navbar .nav-item:last-child {
+            margin-right: 0;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-container .form-control {
+            max-width: 400px;
+            padding-right: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .search-container .form-control::placeholder {
+            color: #ffffff;
+        }
+
+        .search-container .form-select, .search-container .btn {
+            max-width: 150px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+        }
+
+        .search-container .btn {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-container .form-select option {
+            color: #000;
+        }
+
+        .search-container .form-control:focus, .search-container .form-select:focus, .search-container .btn:focus {
+            border-color: #5bc0be;
+            box-shadow: 0 0 0 0.2rem rgba(91, 192, 222, 0.5);
+        }
+
+        .search-container .bi-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ffffff;
+        }
+
+        .search-container .form-group {
+            position: relative;
+        }
+
+        /* Styles pour le modal */
+        .modal-content {
+            background: linear-gradient(135deg, #003366, #5bc0be, #cc0000);
+            color: #ffffff;
+            border-radius: 8px;
+            border: none;
+            padding: 20px;
+        }
+
+        .modal-header {
+            border-bottom: none;
+        }
+
+        .modal-body .form-control {
+            background: rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-body .form-control::placeholder {
+            color: #cccccc;
+        }
+
+        .modal-body .form-control:focus {
+            border-color: #5bc0be;
+            box-shadow: 0 0 0 0.2rem rgba(91, 192, 222, 0.5);
+        }
+
+        .modal-body .btn-primary {
+            background: #5bc0be;
+            border: none;
+        }
+
+        .modal-body .btn-primary:hover {
+            background: #007bff;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container .form-control,
+            .search-container .form-select,
+            .search-container .btn {
+                max-width: none;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const keywordInput = document.querySelector('input[name="keyword"]');
+            const dateFilter = document.querySelector('select[aria-label="Filtrer par date"]');
+            const locationFilter = document.querySelector('select[aria-label="Filtrer par lieu"]');
+            const categoryFilter = document.querySelector('select[aria-label="Filtrer par catégorie"]');
+
+            function filterEvents() {
+                const keyword = keywordInput.value.toLowerCase();
+                const selectedDate = dateFilter.value;
+                const selectedLocation = locationFilter.value;
+                const selectedCategory = categoryFilter.value;
+
+                document.querySelectorAll('.event-details').forEach(eventCard => {
+                    const title = eventCard.querySelector('h2').textContent.toLowerCase();
+                    const description = eventCard.querySelector('.card-body p span').textContent.toLowerCase();
+                    const dateDeb = eventCard.querySelector('p:nth-of-type(2) span').textContent;
+                    const location = eventCard.querySelector('p:nth-of-type(4) span').textContent;
+                    const category = eventCard.querySelector('p:nth-of-type(7) span').textContent;
+
+                    let isMatch = true;
+
+                    if (keyword && !(title.includes(keyword) || description.includes(keyword))) {
+                        isMatch = false;
+                    }
+
+                    if (selectedDate && selectedDate !== 'Filtrer par date') {
+                        const today = new Date();
+                        const eventDate = new Date(dateDeb);
+
+                        if (selectedDate === '1' && eventDate.toDateString() !== today.toDateString()) {
+                            isMatch = false;
+                        } else if (selectedDate === '2') {
+                            const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+                            const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+
+                            if (eventDate < startOfWeek || eventDate > endOfWeek) {
+                                isMatch = false;
+                            }
+                        } else if (selectedDate === '3') {
+                            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                            const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+                            if (eventDate < startOfMonth || eventDate > endOfMonth) {
+                                isMatch = false;
+                            }
+                        }
+                    }
+
+                    if (selectedLocation && selectedLocation !== 'Filtrer par lieu' && location !== selectedLocation) {
+                        isMatch = false;
+                    }
+
+                    if (selectedCategory && selectedCategory !== 'Filtrer par catégorie' && category !== selectedCategory) {
+                        isMatch = false;
+                    }
+
+                    eventCard.style.display = isMatch ? '' : 'none';
+                });
+            }
+
+            keywordInput.addEventListener('input', filterEvents);
+            dateFilter.addEventListener('change', filterEvents);
+            locationFilter.addEventListener('change', filterEvents);
+            categoryFilter.addEventListener('change', filterEvents);
+        });
+    </script>
+
+</head>
+<body>
+<nav class="navbar">
+    <a th:href="@{/home}" class="navbar-brand">Home</a>
+    <div class="d-flex">
+        <a th:href="@{/index}">Events</a>
+        <a th:href="@{/formEvents}">Create Event</a>
+        <a th:href="@{/dashboard}">dashboard</a>
+        <a href="/logout" class="ms-4" th:if="${#authentication.name != 'anonymousUser'}">
+            <i class="bi bi-person-circle"></i> <span th:text="${#authentication.name}">Nom de l'utilisateur</span>
+        </a>
+        <a href="/login" class="ms-4" th:if="${#authentication.name == 'anonymousUser'}">
+            <i class="bi bi-person-circle"></i> Connexion
+        </a>
+    </div>
+</nav>
+<div class="container">
+    <div class="search-container">
+        <form class="d-flex align-items-center">
+            <div class="form-group position-relative me-3 flex-grow-1">
+                <input class="form-control me-2" type="search" placeholder="Recherche" aria-label="Search" name="keyword" th:value="${keyword}">
+                <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-2"></i>
+            </div>
+            <select class="form-select me-2" aria-label="Filtrer par date">
+                <option selected>Filtrer par date</option>
+                <option value="1">Aujourd'hui</option>
+                <option value="2">Cette semaine</option>
+                <option value="3">Ce mois-ci</option>
+            </select>
+            <select class="form-select me-2" aria-label="Filtrer par lieu">
+                <option selected>Filtrer par lieu</option>
+                <option value="1">Lieu 1</option>
+                <option value="2">Lieu 2</option>
+                <option value="3">Lieu 3</option>
+            </select>
+            <select class="form-select me-2" aria-label="Filtrer par catégorie">
+                <option selected>Filtrer par catégorie</option>
+                <option value="1">Catégorie 1</option>
+                <option value="2">Catégorie 2</option>
+                <option value="3">Catégorie 3</option>
+            </select>
+<!--            <button class="btn btn-outline-light" type="submit">Filtrer</button>-->
+        </form>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="col" th:each="event : ${listEvents}">
+            <div class="card event-details">
+                <div class="card-header">
+                    <h2 th:text="${event.title}">Event Title</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <ul>
+                                <li th:each="file : ${event.filePathList}" th:if="${event.filePathList.indexOf(file) == 0}">
+                                    <img class="img-fluid" th:src="@{/uploads/{filename}(filename=${event.filePathList[0].fileName})}" alt="Event Image" th:alt="${event.filePathList[0].fileName}"/>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-7">
+                            <p><strong>Description: </strong><span th:text="${event.description}">Event Description</span></p>
+                            <p><strong>Date de début:</strong> <span th:text="${event.datedeb}">Event Date</span></p>
+                            <p><strong>Date de fin:</strong> <span th:text="${event.datefin}">Event Date</span></p>
+                            <p><strong>Lieu:</strong> <span th:text="${event.location}">Event Location</span></p>
+                            <p><strong>Prix:</strong> <span th:text="${event.billetList[0].prix}">Event Price</span></p>
+                            <p><strong>Statut:</strong> <span th:text="${event.privated ? 'Privé' : 'Public'}">Event Status</span></p>
+                            <p><strong>Catégorie:</strong> <span th:text="${event.category}">Event Category</span></p>
+                            <div class="event-links">
+                                <span style="color: red" class="complete">Complété</span>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#registrationModal">ticket</a>
+                                <a th:href="@{/paticipant}">s'inscrire</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ul class="nav nav-pills justify-content-center mt-4">
+        <li th:each="page, status : ${pages}">
+            <a th:href="@{/index(page=${status.index}, keyword=${keyword})}"
+               th:class="${currentPage == status.index? 'nav-link active' : 'nav-link'}"
+               th:text="${status.index}">
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="registrationModal" tabindex="-1" aria-labelledby="registrationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registrationModalLabel">S'inscrire à l'événement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/register}" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Téléphone</label>
+                        <input type="text" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tickets" class="form-label">Nombre de billets</label>
+                        <input type="number" class="form-control" id="tickets" name="tickets" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">S'inscrire</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

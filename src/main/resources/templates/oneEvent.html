@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Event Management</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+    <script src="/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #003366, #5bc0be, #cc0000);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            margin-top: 80px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .left-container, .right-container {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .left-container {
+            background: linear-gradient(135deg, #003366, #5bc0be, #cc0000);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #ffffff;
+            margin-right: 20px;
+        }
+
+        .right-container {
+            background: linear-gradient(135deg, #003366, #5bc0be, #cc0000);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #ffffff;
+        }
+
+        .media-container img, .media-container video {
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control, .custom-select {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: none;
+        }
+
+        .custom-select:focus {
+            border: none;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .form-control:focus {
+            border: none;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-primary {
+            background-color: #000000;
+            color: #ffffff;
+            border-color: #000000;
+        }
+
+        .btn-primary:hover {
+            background-color: #666666;
+            color: #ffffff;
+            border-color: #000000;
+        }
+
+        .participant-list, .inviter-list {
+            display: none;
+        }
+
+        .participant-list.active, .inviter-list.active {
+            display: block;
+        }
+
+        .list-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item .actions a {
+            color: #ffffff;
+            margin-left: 10px;
+        }
+
+        .list-item .actions .bi-trash {
+            font-size: 18px;
+            color: #cc0000;
+        }
+
+        .list-item .actions .bi-trash:hover {
+            color: #ff6666;
+        }
+
+        .list-item .actions .bi-pencil {
+            font-size: 18px;
+        }
+
+        .list-item .actions .bi-pencil:hover {
+            color: #003366;
+        }
+        .navbar {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            box-sizing: border-box;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 20px;
+            transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a th:href="@{/home}" class="navbar-brand">Home</a>
+    <div class="d-flex">
+        <a th:href="@{/index}">Events</a>
+        <a th:href="@{/formEvents}">Create Event</a>
+        <a th:href="@{/dashboard}">Dashboard</a>
+        <a href="/logout" class="ms-4" th:if="${#authentication.name != 'anonymousUser'}">
+            <i class="bi bi-person-circle"></i> <span th:text="${#authentication.name}">Nom de l'utilisateur</span>
+        </a>
+        <a href="/login" class="ms-4" th:if="${#authentication.name == 'anonymousUser'}">
+            <i class="bi bi-person-circle"></i> Connexion
+        </a>
+    </div>
+</nav>
+<div class="container">
+    <div class="left-container">
+        <div class="d-flex justify-content-center mb-3">
+            <button class="btn btn-primary me-2" onclick="showParticipants()">Participants</button>
+            <button class="btn btn-primary" onclick="showInviters()">Inviters</button>
+        </div>
+        <div class="participant-list">
+            <h3 class="text-center">Participant List</h3>
+            <div th:each="participant : ${event.getParticipants()}">
+                <div class="list-item">
+                    <span th:text="${participant.username}">Participant Name</span>
+                    <span th:text="${participant.email}">Participant Email</span>
+                    <div class="actions">
+                        <a href="" title="Edit"><i class="bi bi-pencil"></i></a>
+                        <a href="" title="Delete"><i class="bi bi-trash"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="inviter-list">
+            <h3 class="text-center">Inviter List</h3>
+            <div th:each="inviter : ${event.getInviteList()}">
+                <div class="list-item">
+                    <span th:text="${inviter.getUsername()}">Inviter Name</span>
+                    <span th:text="${inviter.getEmail()}">Inviter Email</span>
+<!--                    <span th:text="${inviter.getUsername()}">Inviter Name</span>-->
+                    <div class="actions">
+                        <a href="" title="Edit"><i class="bi bi-pencil"></i></a>
+                        <a href="" title="Delete"><i class="bi bi-trash"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="right-container">
+        <div class="media-container mb-4">
+            <img  alt="Event Image">
+<!--            <video th:each="video : ${event.videos}" controls th:src="@{/uploads/{filename}(filename=${video.fileName})}"></video>-->
+        </div>
+        <form method="post" class="form-container">
+            <h2 class="text-center">Update Event</h2>
+            <div class="form-group">
+                <input type="text" class="form-control" id="title"  placeholder="Enter event title" required>
+            </div>
+            <div class="form-group">
+                <textarea class="form-control" id="description"  placeholder="Enter event description" required></textarea>
+            </div>
+            <div class="form-group">
+                <select class="form-control custom-select" id="category"  required>
+                    <option value="" disabled selected>Select a category</option>
+                    <option value="Music">Music</option>
+                    <option value="Art">Art</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Education">Education</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="datedeb">Start Date</label>
+                <input type="date" class="form-control" id="datedeb" t required>
+            </div>
+            <div class="form-group">
+                <label for="datefin">End Date</label>
+                <input type="date" class="form-control" id="datefin"  required>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" id="location" placeholder="Enter event location" required>
+            </div>
+            <div class="form-group">
+                <label for="capacity">Capacity</label>
+                <input type="number" class="form-control" id="capacity"  required>
+            </div>
+            <div class="form-group">
+                <label for="privated">Privacy</label>
+                <select class="form-control custom-select" id="privated"  required>
+                    <option value="true">Private</option>
+                    <option value="false">Public</option>
+                </select>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Update Event</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showParticipants() {
+        document.querySelector('.participant-list').classList.add('active');
+        document.querySelector('.inviter-list').classList.remove('active');
+    }
+
+    function showInviters() {
+        document.querySelector('.participant-list').classList.remove('active');
+        document.querySelector('.inviter-list').classList.add('active');
+    }
+</script>
+</body>
+</html>
